@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "citk-examples"
+version = "0.1.0"
+description = "Runnable Python examples for the Causal Inference Toolkit deck"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "numpy",
+    "pandas",
+    "scipy",
+    "matplotlib",
+    "statsmodels",
+    "linearmodels",
+    "causaldata",
+    "rdrobust",
+    "econml",
+    "doubleml",
+    "pysyncon",
+    "scikit-learn",
+]
+
+[project.optional-dependencies]
+# Methods with no mature Python implementation are run through R.
+r = ["rpy2>=3.5"]
+# Machine-learning-based estimators (DML, DML-IV, CATE / causal forest).
+ml = ["econml", "doubleml", "scikit-learn"]
+# Microsoft's ML-regularized synthetic control (installed from GitHub).
+sparsesc = ["SparseSC @ git+https://github.com/microsoft/SparseSC.git"]
+# Staggered DiD example reuses the sibling csdid package in this monorepo.
+did = ["csdid @ file:///../csdid"]
+dev = ["pytest", "jupyter"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
