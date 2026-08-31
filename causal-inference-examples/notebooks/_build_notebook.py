@@ -1,7 +1,9 @@
 """Generate causal_inference_examples.ipynb from structured cell content.
 
-Run:  python notebooks/_build_notebook.py
-This script is a build helper; the committed artifact is the .ipynb it writes.
+Run:  python causal-inference-examples/notebooks/_build_notebook.py
+This script is a build helper; the committed artifact is the .ipynb it writes,
+which lives at the repository root (the notebook is the main user-facing entry
+point, while the example scripts it drives stay in causal-inference-examples/).
 """
 from __future__ import annotations
 
@@ -10,7 +12,9 @@ from pathlib import Path
 import nbformat as nbf
 
 HERE = Path(__file__).resolve().parent
-OUT = HERE / "causal_inference_examples.ipynb"
+# notebooks/ -> causal-inference-examples/ -> repository root.
+REPO_ROOT = HERE.parents[1]
+OUT = REPO_ROOT / "causal_inference_examples.ipynb"
 
 nb = nbf.v4.new_notebook()
 cells: list = []
@@ -72,11 +76,13 @@ sync. Results (and any diagnostic plots) are printed / displayed inline.
 md(r"""
 ## Setup
 
-We wire up the import paths used by the example scripts (`examples/`, `data/`,
-`src/`, and the monorepo root for the sibling `csdid` package), then define a
-small `run_example()` helper that loads a numbered script by file path — module
-names like `01_matching` aren't valid Python identifiers, so we load them the
-same way the test-suite does (`importlib.util.spec_from_file_location`).
+We locate the `causal-inference-examples/` package (this notebook sits at the
+repository root) and wire up the import paths its example scripts expect
+(`examples/`, `data/`, `src/`, and the monorepo root for the sibling `csdid`
+package), then define a small `run_example()` helper that loads a numbered
+script by file path — module names like `01_matching` aren't valid Python
+identifiers, so we load them the same way the test-suite does
+(`importlib.util.spec_from_file_location`).
 """)
 
 code(r"""
@@ -91,20 +97,32 @@ import matplotlib
 # display those PNGs inline in the relevant sections.
 matplotlib.use("Agg")
 
-# `notebooks/` -> project root is one level up.
+# The notebook lives at the repository root; the runnable examples package is in
+# ./causal-inference-examples. Locate it robustly regardless of the launch CWD.
 PROJECT_ROOT = Path.cwd()
-if not (PROJECT_ROOT / "examples").exists():
-    # Allow running with the notebook's own directory as the CWD.
-    PROJECT_ROOT = Path.cwd().parent
+if (PROJECT_ROOT / "causal-inference-examples" / "examples").exists():
+    # Notebook run from the repository root (its home).
+    PKG = PROJECT_ROOT / "causal-inference-examples"
+elif (PROJECT_ROOT / "examples").exists():
+    # Notebook run from inside the examples package directory.
+    PKG = PROJECT_ROOT
+else:
+    # Fallback: search upward for the package.
+    PKG = next(
+        (p / "causal-inference-examples"
+         for p in [PROJECT_ROOT, *PROJECT_ROOT.parents]
+         if (p / "causal-inference-examples" / "examples").exists()),
+        PROJECT_ROOT / "causal-inference-examples",
+    )
 
-EXAMPLES = PROJECT_ROOT / "examples"
-FIG_DIR = PROJECT_ROOT / "notebooks" / "figures"
+EXAMPLES = PKG / "examples"
+FIG_DIR = PKG / "notebooks" / "figures"
 
 for p in (
     EXAMPLES,
-    PROJECT_ROOT / "data",
-    PROJECT_ROOT / "src",
-    PROJECT_ROOT.parent,  # monorepo root (for the sibling csdid package)
+    PKG / "data",
+    PKG / "src",
+    PKG.parent.parent,  # monorepo root (for the sibling csdid package)
 ):
     if str(p) not in sys.path:
         sys.path.insert(0, str(p))
@@ -135,8 +153,8 @@ def run_example(name: str):
         return None
 
 
-print("Project root:", PROJECT_ROOT)
-print("Examples dir:", EXAMPLES)
+print("Repository root:", PROJECT_ROOT)
+print("Examples package:", PKG)
 """)
 
 code(r"""
@@ -403,10 +421,13 @@ You've now run the full toolkit end-to-end:
 - **Comparative case studies:** synthetic control (classic and ML-regularized).
 
 Each method encodes a different **identifying assumption** — always the first
-thing to scrutinize. The matching helpers, plots, and datasets live in
-`data/loaders.py`, `src/citk_examples/`, and the `examples/` scripts; see the
-[`README.md`](../README.md) and [`data/README.md`](../data/README.md) for
-provenance and licenses.
+thing to scrutinize. The matching helpers, plots, and datasets live under
+`causal-inference-examples/` (`data/loaders.py`, `src/citk_examples/`, and the
+`examples/` scripts); see the
+[project README](README.md),
+[`causal-inference-examples/README.md`](causal-inference-examples/README.md),
+and [`causal-inference-examples/data/README.md`](causal-inference-examples/data/README.md)
+for provenance and licenses.
 """)
 
 nb["cells"] = cells

@@ -57,6 +57,10 @@ See [`data/README.md`](data/README.md) for dataset provenance and licenses.
 data/loaders.py          Cached fetchers for every public dataset
 src/citk_examples/       Shared helpers (rpy2 bridge, plotting)
 examples/                Runnable .py scripts, one per method
-notebooks/               Narrative notebooks (mirror the scripts)
+notebooks/               Notebook figures + the notebook build helper
 tests/                   Smoke tests: every example runs end-to-end
 ```
+
+The narrative notebook that runs every method lives at the repository root:
+[`../causal_inference_examples.ipynb`](../causal_inference_examples.ipynb)
+(regenerate it with `python notebooks/_build_notebook.py`).

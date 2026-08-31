@@ -16,28 +16,32 @@ cannot solve.
 
 ```
 .
-├── 260822.Causal_Infererence_Toolkit-vPublic.md          # Original deck (raw slide export)
-├── 260822.Causal_Infererence_Toolkit-vPublic.pdf         # Original deck (PDF)
-├── 260822.Causal_Infererence_Toolkit-vPublic_vF.pdf      # Final PDF
-├── 260822.Causal_Inference_Toolkit-vPublic_REVISED.md    # Rewritten, clean seminar deck
-├── 260822.Causal_Inference_Toolkit-vPublic_change_summary.md  # Technical critique & change log
-├── outputs/                                              # Generated artifacts (e.g. .pptx)
-└── causal-inference-examples/                            # Runnable Python companion (see its README)
+├── causal_inference_examples.ipynb    # Narrative notebook: runs all 11 methods (start here)
+├── docs/                              # The seminar deck (Markdown + PDF) and change log
+│   ├── 260822.Causal_Infererence_Toolkit-vPublic.md          # Original deck (raw slide export)
+│   ├── 260822.Causal_Infererence_Toolkit-vPublic.pdf         # Original deck (PDF)
+│   ├── 260822.Causal_Infererence_Toolkit-vPublic_vF.pdf      # Final PDF
+│   ├── 260822.Causal_Inference_Toolkit-vPublic_REVISED.md    # Rewritten, clean seminar deck
+│   └── 260822.Causal_Inference_Toolkit-vPublic_change_summary.md  # Technical critique & change log
+├── outputs/                          # Generated artifacts (e.g. .pptx)
+└── causal-inference-examples/        # Runnable Python companion (see its README)
     ├── data/loaders.py            # Cached fetchers for every public dataset
     ├── src/citk_examples/         # Shared helpers (rpy2 bridge, plotting)
     ├── examples/                  # One runnable .py script per method
-    ├── notebooks/                 # Narrative notebook that runs all methods
+    ├── notebooks/                 # Notebook figures + the notebook build helper
     └── tests/                     # Smoke tests: every example runs end-to-end
 ```
 
 ## The deck
 
+The seminar deck and its change log live in [`docs/`](docs/):
+
 | File | What it is |
 |------|-----------|
-| `260822.Causal_Infererence_Toolkit-vPublic.md` / `.pdf` | The **original** slide export (raw text; some equations/tables are garbled by the export). |
-| `260822.Causal_Infererence_Toolkit-vPublic_vF.pdf` | The **final** presentation PDF. |
-| `260822.Causal_Inference_Toolkit-vPublic_REVISED.md` | A **rewritten**, clean Markdown seminar deck with corrected assumptions and current toolkit guidance. |
-| `260822.Causal_Inference_Toolkit-vPublic_change_summary.md` | A **technical critique and change log** documenting the factual corrections and structural improvements made in the revised deck. |
+| `docs/260822.Causal_Infererence_Toolkit-vPublic.md` / `.pdf` | The **original** slide export (raw text; some equations/tables are garbled by the export). |
+| `docs/260822.Causal_Infererence_Toolkit-vPublic_vF.pdf` | The **final** presentation PDF. |
+| `docs/260822.Causal_Inference_Toolkit-vPublic_REVISED.md` | A **rewritten**, clean Markdown seminar deck with corrected assumptions and current toolkit guidance. |
+| `docs/260822.Causal_Inference_Toolkit-vPublic_change_summary.md` | A **technical critique and change log** documenting the factual corrections and structural improvements made in the revised deck. |
 | `outputs/` | Generated artifacts such as a `.pptx` rendering of the deck. |
 
 Start with the **revised deck** for the cleanest read, and the **change summary**
@@ -75,25 +79,23 @@ for dataset provenance and licenses.
 ## Quick start
 
 ```bash
-cd causal-inference-examples
-
-# Core install (examples 2, 3, 4, 6, 7, 8, 9, 10)
-python -m pip install -e .
+# Install the runnable companion (examples 2, 3, 4, 6, 7, 8, 9, 10)
+python -m pip install -e causal-inference-examples
 
 # Run a single method
-python examples/03_instrumental_variables.py
+python causal-inference-examples/examples/03_instrumental_variables.py
 
-# Or run every method with explanations in one place
-jupyter notebook notebooks/causal_inference_examples.ipynb
+# Or run every method with explanations in one place (from the repo root)
+jupyter notebook causal_inference_examples.ipynb
 ```
 
 Some methods rely on optional back-ends:
 
 ```bash
-python -m pip install -e ".[r]"         # example 1  — R + MatchIt via rpy2
-python -m pip install -e ".[sparsesc]"  # example 11 — Microsoft SparseSC (from GitHub)
-python -m pip install -e ".[did]"       # example 5  — sibling csdid package
-python -m pip install -e ".[dev]"       # pytest + jupyter
+python -m pip install -e "causal-inference-examples[r]"         # example 1  — R + MatchIt via rpy2
+python -m pip install -e "causal-inference-examples[sparsesc]"  # example 11 — Microsoft SparseSC (from GitHub)
+python -m pip install -e "causal-inference-examples[did]"       # example 5  — sibling csdid package
+python -m pip install -e "causal-inference-examples[dev]"       # pytest + jupyter
 ```
 
 The notebook and the standalone scripts stay in sync: each notebook cell simply
