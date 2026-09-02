@@ -56,9 +56,10 @@ sync. Results (and any diagnostic plots) are printed / displayed inline.
 | 6 | Regression discontinuity | `rdrobust` | Gov. transfers (Honduras) |
 | 7 | Double / debiased ML | `doubleml` | 401(k) |
 | 8 | DML-IV | `econml` | 401(k) |
-| 9 | Heterogeneous effects / CATE | `econml` | 401(k) |
+| 9 | Heterogeneous effects / CATE (Causal Forest) | `econml` | 401(k) |
 | 10 | Synthetic control | `pysyncon` | German reunification |
 | 11 | Synthetic control (ML-regularized) | Microsoft `SparseSC` | German reunification |
+| 12 | Meta-learners for HTE (S-, T-, X-Learner) | `econml` | 401(k) |
 
 > **Note on optional dependencies.** Examples 1 (R + `MatchIt`), 5 (`csdid`),
 > and 11 (`SparseSC`) rely on optional back-ends. If one isn't installed, that
@@ -398,6 +399,46 @@ ML-regularized SC also finds a **negative** reunification effect on GDP.
 """,
         "",
     ),
+    (
+        "12_meta_learners",
+        "12 · Meta-Learners for HTE (S-, T-, X-Learner)",
+        r"""
+**Assumption.** Same unconfoundedness + overlap as the Causal Forest (example 9)
+— this is another **heterogeneous treatment effect (HTE)** estimator of
+$CATE(x) = E[Y(1) - Y(0)\mid X=x]$.
+
+**Estimator.** *Meta-learners* are a recipe, not a model: they wire ordinary
+supervised regressors together (Künzel et al. 2019). We estimate the CATE of
+401(k) eligibility on net financial assets three ways and compare:
+
+- **S-Learner ("Single").** One model $\mu(X, T)$ on pooled data with treatment
+  $T$ as just another feature; $CATE(x)=\mu(x,1)-\mu(x,0)$.
+- **T-Learner ("Two").** Two separate models $\mu_1(X)$ (treated) and $\mu_0(X)$
+  (control); $CATE(x)=\mu_1(x)-\mu_0(x)$.
+- **X-Learner ("Cross").** Two-stage refinement of the T-Learner: impute
+  individual effects by crossing each arm onto the other, fit a second-stage
+  effect model per arm, and combine them with propensity-score weights.
+
+**Diagnostic.** Overall ATE (= mean CATE) per learner, and the CATE profile
+across income quartiles (plotted below) — read against the Causal Forest in
+example 9.
+
+**Interpretation — pros & cons:**
+
+| Learner | Pros | Cons |
+|---------|------|------|
+| **S** | Simplest; one model; can shrink CATE to exactly 0 (good when there's no effect). | The lone model can *wash out* a weak treatment signal, biasing CATE toward 0. |
+| **T** | Each arm fully flexible; no shared-form restriction; easy to reason about. | No borrowing of strength across arms; high variance, unstable with imbalanced/small treated groups. |
+| **X** | Efficient under imbalance; borrows strength across arms; propensity-weighted — usually most robust. | Most moving parts (outcome + effect + propensity models); more to tune. |
+
+Typically the **S-Learner reports the smallest ATE** here (regularization pulls
+the effect toward 0), while **T-** and **X-Learner** agree more closely — a
+concrete illustration of the trade-offs above.
+
+> Requires `econml` (`pip install -e ".[ml]"`). Skipped if unavailable.
+""",
+        'show_figure("12_meta_learners.png")',
+    ),
 ]
 
 for name, title, explanation, post in sections:
@@ -415,7 +456,8 @@ md(r"""
 You've now run the full toolkit end-to-end:
 
 - **Selection-on-observables:** matching, propensity scores + IPTW, Double ML,
-  causal forests (CATE).
+  and **HTE / CATE** estimators — causal forests plus the S-, T-, and X-Learner
+  meta-learners.
 - **Quasi-experiments:** instrumental variables, DiD (2×2 and staggered),
   regression discontinuity.
 - **Comparative case studies:** synthetic control (classic and ML-regularized).
