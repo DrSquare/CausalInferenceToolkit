@@ -16,13 +16,13 @@ cannot solve.
 
 ```
 .
-├── causal_inference_examples.ipynb    # Narrative notebook: runs all 11 methods (start here)
-├── docs/                              # The seminar deck (Markdown + PDF) and change log
-│   ├── 260822.Causal_Infererence_Toolkit-vPublic.md          # Original deck (raw slide export)
-│   ├── 260822.Causal_Infererence_Toolkit-vPublic.pdf         # Original deck (PDF)
-│   ├── 260822.Causal_Infererence_Toolkit-vPublic_vF.pdf      # Final PDF
-│   ├── 260822.Causal_Inference_Toolkit-vPublic_REVISED.md    # Rewritten, clean seminar deck
-│   └── 260822.Causal_Inference_Toolkit-vPublic_change_summary.md  # Technical critique & change log
+├── causal_inference_examples.ipynb    # Narrative notebook: runs all 12 methods (start here)
+├── 260822.Causal_Infererence_Toolkit-vPublic.md          # Original deck (raw slide export)
+├── 260822.Causal_Infererence_Toolkit-vPublic.pdf         # Original deck (PDF)
+├── 260822.Causal_Infererence_Toolkit-vPublic_vF.pdf      # Final PDF
+├── 260822.Causal_Infererence_Toolkit-vShare.pdf          # Shareable PDF
+├── 260822.Causal_Inference_Toolkit-vPublic_REVISED.md    # Rewritten, clean seminar deck
+├── 260822.Causal_Inference_Toolkit-vPublic_change_summary.md  # Technical critique & change log
 ├── outputs/                          # Generated artifacts (e.g. .pptx)
 └── causal-inference-examples/        # Runnable Python companion (see its README)
     ├── data/loaders.py            # Cached fetchers for every public dataset
@@ -34,14 +34,13 @@ cannot solve.
 
 ## The deck
 
-The seminar deck and its change log live in [`docs/`](docs/):
-
 | File | What it is |
 |------|-----------|
-| `docs/260822.Causal_Infererence_Toolkit-vPublic.md` / `.pdf` | The **original** slide export (raw text; some equations/tables are garbled by the export). |
-| `docs/260822.Causal_Infererence_Toolkit-vPublic_vF.pdf` | The **final** presentation PDF. |
-| `docs/260822.Causal_Inference_Toolkit-vPublic_REVISED.md` | A **rewritten**, clean Markdown seminar deck with corrected assumptions and current toolkit guidance. |
-| `docs/260822.Causal_Inference_Toolkit-vPublic_change_summary.md` | A **technical critique and change log** documenting the factual corrections and structural improvements made in the revised deck. |
+| `260822.Causal_Infererence_Toolkit-vPublic.md` / `.pdf` | The **original** slide export (raw text; some equations/tables are garbled by the export). |
+| `260822.Causal_Infererence_Toolkit-vPublic_vF.pdf` | The **final** presentation PDF. |
+| `260822.Causal_Infererence_Toolkit-vShare.pdf` | A **shareable** PDF of the deck. |
+| `260822.Causal_Inference_Toolkit-vPublic_REVISED.md` | A **rewritten**, clean Markdown seminar deck with corrected assumptions and current toolkit guidance. |
+| `260822.Causal_Inference_Toolkit-vPublic_change_summary.md` | A **technical critique and change log** documenting the factual corrections and structural improvements made in the revised deck. |
 | `outputs/` | Generated artifacts such as a `.pptx` rendering of the deck. |
 
 Start with the **revised deck** for the cleanest read, and the **change summary**
@@ -71,10 +70,24 @@ re-deriving it.
 | 9 | Heterogeneous effects / CATE (Causal Forest) | `econml` | 401(k) |
 | 10 | Synthetic control | `pysyncon` | German reunification |
 | 11 | Synthetic control (ML-regularized) | Microsoft `SparseSC` | German reunification |
+| 12 | Meta-learners for HTE (S-, T-, X-Learner) | `econml` | 401(k) |
 
 See [`causal-inference-examples/README.md`](causal-inference-examples/README.md)
 for full details and [`causal-inference-examples/data/README.md`](causal-inference-examples/data/README.md)
 for dataset provenance and licenses.
+
+### Heterogeneous treatment effects (HTE): Causal Forest vs. meta-learners
+
+Examples 9 and 12 both estimate the **Conditional Average Treatment Effect**
+$CATE(x) = E[Y(1) - Y(0)\mid X=x]$ — *who* the treatment helps, not just the
+average. Example 9 uses a **Causal Forest**; example 12 covers the three
+**meta-learners** (a recipe that wires ordinary regressors together):
+
+| Meta-learner | Idea | Pros | Cons |
+|--------------|------|------|------|
+| **S-Learner** ("Single") | One model $\mu(X,T)$ with treatment as a feature; $CATE=\mu(x,1)-\mu(x,0)$. | Simplest; single model; can shrink CATE to exactly 0 when there's no effect. | The lone model can *wash out* a weak treatment signal, biasing CATE toward 0. |
+| **T-Learner** ("Two") | Separate models $\mu_1$ (treated), $\mu_0$ (control); $CATE=\mu_1(x)-\mu_0(x)$. | Each arm fully flexible; easy to reason about. | No borrowing of strength; high variance, unstable with imbalanced/small treated groups. |
+| **X-Learner** ("Cross") | Two-stage refinement: impute effects by crossing arms, refit per arm, combine with propensity weights. | Efficient under imbalance; borrows strength across arms; usually most robust. | Most moving parts (outcome + effect + propensity models); more to tune. |
 
 ## Quick start
 
