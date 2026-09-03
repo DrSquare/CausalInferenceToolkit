@@ -22,9 +22,15 @@ package from Python via [`rpy2`](https://rpy2.github.io/) instead of re-deriving
 | 9 | Heterogeneous effects / CATE (Causal Forest) | `econml` | 401(k) | **working** |
 | 10 | Synthetic control | `pysyncon` | German reunification | **working** |
 | 11 | Synthetic control (ML-regularized) | Microsoft `SparseSC` | German reunification | **working** |
+| 12 | Meta-learners for HTE (S-, T-, X-Learner) | `econml` | 401(k) | **working** |
 
 Each example follows the same narrative arc used throughout the deck:
 **assumption → estimator → diagnostic plot → interpretation.**
+
+Examples 9 and 12 are the **heterogeneous-treatment-effect (HTE)** estimators:
+example 9 uses a Causal Forest, and example 12 the S-, T-, and X-Learner
+meta-learners (see the pros/cons table in the project
+[`README.md`](../README.md#heterogeneous-treatment-effects-hte-causal-forest-vs-meta-learners)).
 
 ## Quick start
 

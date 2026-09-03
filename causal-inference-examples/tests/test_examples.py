@@ -121,3 +121,19 @@ def test_synthetic_control_sparsesc():
     # ML-regularized synthetic control also finds a negative reunification
     # effect on West German GDP.
     assert res["att"] < 0
+
+
+def test_meta_learners():
+    if importlib.util.find_spec("econml") is None:
+        pytest.skip("econml not installed")
+    mod = _load("12_meta_learners")
+    res = mod.run()
+    # All three meta-learners return a finite ATE and a 4-quartile CATE profile,
+    # and (as with the causal forest) the effect rises with income.
+    for key in ("s_learner", "t_learner", "x_learner"):
+        assert key in res
+        assert isinstance(res[key]["ate"], float)
+        cate = res[key]["cate_by_income"]
+        assert len(cate) == 4
+        assert cate["Q4"] > cate["Q1"]
+
