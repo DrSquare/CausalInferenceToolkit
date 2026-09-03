@@ -18,7 +18,6 @@ assumptions each method requires** and what it can and cannot solve.
 .
 ├── causal_inference_examples.ipynb              # Narrative notebook: runs all 12 methods (start here)
 ├── 260822.Causal_Infererence_Toolkit-vShare.pdf # The shareable seminar deck (PDF)
-├── outputs/                                     # Generated artifacts (e.g. a .pptx rendering of the deck)
 └── causal-inference-examples/                   # Runnable Python companion (see its README)
     ├── data/loaders.py            # Cached fetchers for every public dataset
     ├── src/citk_examples/         # Shared helpers (rpy2 bridge, plotting)
@@ -31,8 +30,7 @@ assumptions each method requires** and what it can and cannot solve.
 
 The shareable seminar deck is
 [`260822.Causal_Infererence_Toolkit-vShare.pdf`](260822.Causal_Infererence_Toolkit-vShare.pdf)
-at the repository root, and a PowerPoint rendering lives in
-[`outputs/`](outputs/). The runnable companion below reproduces every method the
+at the repository root. The runnable companion below reproduces every method the
 deck covers on open-source public data.
 
 ## The runnable companion — `causal-inference-examples/`
