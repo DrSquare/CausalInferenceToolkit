@@ -8,44 +8,32 @@ open-source public data.
 The deck walks through the modern causal-inference toolkit — from the
 identification-vs-estimation distinction to matching, instrumental variables,
 difference-in-differences, regression discontinuity, double/debiased machine
-learning, heterogeneous treatment effects, and synthetic control — always with
-an emphasis on **which assumptions each method requires** and what it can and
-cannot solve.
+learning, heterogeneous treatment effects (Causal Forest **and** S-/T-/X-Learner
+meta-learners), and synthetic control — always with an emphasis on **which
+assumptions each method requires** and what it can and cannot solve.
 
 ## Repository layout
 
 ```
 .
-├── causal_inference_examples.ipynb    # Narrative notebook: runs all 11 methods (start here)
-├── docs/                              # The seminar deck (Markdown + PDF) and change log
-│   ├── 260822.Causal_Infererence_Toolkit-vPublic.md          # Original deck (raw slide export)
-│   ├── 260822.Causal_Infererence_Toolkit-vPublic.pdf         # Original deck (PDF)
-│   ├── 260822.Causal_Infererence_Toolkit-vPublic_vF.pdf      # Final PDF
-│   ├── 260822.Causal_Inference_Toolkit-vPublic_REVISED.md    # Rewritten, clean seminar deck
-│   └── 260822.Causal_Inference_Toolkit-vPublic_change_summary.md  # Technical critique & change log
-├── outputs/                          # Generated artifacts (e.g. .pptx)
-└── causal-inference-examples/        # Runnable Python companion (see its README)
+├── causal_inference_examples.ipynb              # Narrative notebook: runs all 12 methods (start here)
+├── 260822.Causal_Infererence_Toolkit-vShare.pdf # The shareable seminar deck (PDF)
+├── outputs/                                     # Generated artifacts (e.g. a .pptx rendering of the deck)
+└── causal-inference-examples/                   # Runnable Python companion (see its README)
     ├── data/loaders.py            # Cached fetchers for every public dataset
     ├── src/citk_examples/         # Shared helpers (rpy2 bridge, plotting)
-    ├── examples/                  # One runnable .py script per method
+    ├── examples/                  # One runnable .py script per method (01–12)
     ├── notebooks/                 # Notebook figures + the notebook build helper
     └── tests/                     # Smoke tests: every example runs end-to-end
 ```
 
 ## The deck
 
-The seminar deck and its change log live in [`docs/`](docs/):
-
-| File | What it is |
-|------|-----------|
-| `docs/260822.Causal_Infererence_Toolkit-vPublic.md` / `.pdf` | The **original** slide export (raw text; some equations/tables are garbled by the export). |
-| `docs/260822.Causal_Infererence_Toolkit-vPublic_vF.pdf` | The **final** presentation PDF. |
-| `docs/260822.Causal_Inference_Toolkit-vPublic_REVISED.md` | A **rewritten**, clean Markdown seminar deck with corrected assumptions and current toolkit guidance. |
-| `docs/260822.Causal_Inference_Toolkit-vPublic_change_summary.md` | A **technical critique and change log** documenting the factual corrections and structural improvements made in the revised deck. |
-| `outputs/` | Generated artifacts such as a `.pptx` rendering of the deck. |
-
-Start with the **revised deck** for the cleanest read, and the **change summary**
-to see how it differs from the original.
+The shareable seminar deck is
+[`260822.Causal_Infererence_Toolkit-vShare.pdf`](260822.Causal_Infererence_Toolkit-vShare.pdf)
+at the repository root, and a PowerPoint rendering lives in
+[`outputs/`](outputs/). The runnable companion below reproduces every method the
+deck covers on open-source public data.
 
 ## The runnable companion — `causal-inference-examples/`
 
@@ -71,6 +59,33 @@ re-deriving it.
 | 9 | Heterogeneous effects / CATE (Causal Forest) | `econml` | 401(k) |
 | 10 | Synthetic control | `pysyncon` | German reunification |
 | 11 | Synthetic control (ML-regularized) | Microsoft `SparseSC` | German reunification |
+| 12 | Meta-learners for HTE (S-, T-, X-Learner) | `econml` | 401(k) |
+
+### Heterogeneous treatment effects (HTE): Causal Forest vs. meta-learners
+
+Examples **9** and **12** both estimate the **conditional average treatment
+effect** $CATE(x) = E[Y(1) - Y(0)\mid X = x]$ — *who* benefits most, not just the
+average. They take two different routes on the same 401(k) data:
+
+- **Example 9 — Causal Forest** (`econml.dml.CausalForestDML`): a Generalized
+  Random Forest that splits to maximize the *difference in treatment effect*,
+  with valid confidence intervals for the CATE.
+- **Example 12 — Meta-learners** (`econml.metalearners`): a recipe that wires
+  ordinary supervised regressors together (Künzel et al. 2019).
+
+| Meta-learner | Idea | Pros | Cons |
+|--------------|------|------|------|
+| **S-Learner** ("Single") | One model $\mu(X, T)$ with treatment as a feature; $CATE=\mu(x,1)-\mu(x,0)$. | Simplest; can shrink CATE to exactly 0 when there's no effect. | The lone model can *wash out* a weak treatment signal, biasing CATE toward 0. |
+| **T-Learner** ("Two") | Separate models per arm, $\mu_1(X)$ and $\mu_0(X)$; $CATE=\mu_1(x)-\mu_0(x)$. | Each arm fully flexible; easy to reason about. | No borrowing of strength across arms; high variance with small/imbalanced treated groups. |
+| **X-Learner** ("Cross") | Two-stage refinement of the T-Learner, combined with propensity weights. | Efficient under imbalance; usually most robust. | Most moving parts (outcome + effect + propensity models) to tune. |
+
+**Causal Forest vs. meta-learners.** The forest is a single, self-tuning
+estimator with built-in inference, and is a strong default when you mainly want
+$CATE(x)$ and its uncertainty. Meta-learners are more transparent and let you
+plug in *any* regressor, but they shift the modeling choices (and the bias/variance
+trade-offs above) onto you. On the 401(k) data the S-Learner reports the smallest
+ATE (regularization pulls the effect toward 0), while the T- and X-Learners agree
+more closely with each other and with the Causal Forest.
 
 See [`causal-inference-examples/README.md`](causal-inference-examples/README.md)
 for full details and [`causal-inference-examples/data/README.md`](causal-inference-examples/data/README.md)
@@ -79,22 +94,23 @@ for dataset provenance and licenses.
 ## Quick start
 
 ```bash
-# Install the runnable companion (examples 2, 3, 4, 6, 7, 8, 9, 10)
+# Install the runnable companion (examples 2, 3, 4, 6, 7, 8, 9, 12)
 python -m pip install -e causal-inference-examples
 
 # Run a single method
 python causal-inference-examples/examples/03_instrumental_variables.py
 
-# Or run every method with explanations in one place (from the repo root)
+# Or run every method (all 12) with explanations in one place (from the repo root)
 jupyter notebook causal_inference_examples.ipynb
 ```
 
 Some methods rely on optional back-ends:
 
 ```bash
-python -m pip install -e "causal-inference-examples[r]"         # example 1  — R + MatchIt via rpy2
-python -m pip install -e "causal-inference-examples[sparsesc]"  # example 11 — Microsoft SparseSC (from GitHub)
-python -m pip install -e "causal-inference-examples[did]"       # example 5  — sibling csdid package
+python -m pip install -e "causal-inference-examples[r]"         # example 1       — R + MatchIt via rpy2
+python -m pip install -e "causal-inference-examples[ml]"        # examples 8,9,12 — econml (DML-IV, Causal Forest, meta-learners)
+python -m pip install -e "causal-inference-examples[sparsesc]"  # example 11      — Microsoft SparseSC (from GitHub)
+python -m pip install -e "causal-inference-examples[did]"       # example 5       — sibling csdid package
 python -m pip install -e "causal-inference-examples[dev]"       # pytest + jupyter
 ```
 
